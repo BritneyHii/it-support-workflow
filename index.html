@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>境外产研 IT 支持工单定级与跟进机制</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "PingFang SC",
+        "Hiragino Sans GB",
+        "Microsoft YaHei",
+        Arial,
+        sans-serif;
+      background: #f5f7fa;
+      color: #1f2937;
+      line-height: 1.65;
+    }
+
+    .container {
+      width: min(1180px, calc(100% - 32px));
+      margin: 40px auto 60px;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #172554 0%, #1e3a8a 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 38px 42px;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 30px rgba(30, 58, 138, 0.12);
+    }
+
+    .header .tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.14);
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    .header h1 {
+      margin: 0 0 10px;
+      font-size: 30px;
+      line-height: 1.35;
+      letter-spacing: -.5px;
+    }
+
+    .header p {
+      margin: 0;
+      color: rgba(255,255,255,.82);
+      font-size: 15px;
+      max-width: 900px;
+    }
+
+    /* Section */
+    .section {
+      background: #fff;
+      border-radius: 16px;
+      padding: 28px 30px;
+      margin-bottom: 22px;
+      box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 22px;
+      font-size: 21px;
+      color: #111827;
+    }
+
+    .section-title .icon {
+      width: 34px;
+      height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9px;
+      background: #eff6ff;
+      font-size: 18px;
+    }
+
+    /* Core rule */
+    .core-rule {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 22px;
+    }
+
+    .core-rule strong {
+      color: #1d4ed8;
+    }
+
+    .core-rule .sub {
+      margin-top: 6px;
+      color: #475569;
+      font-size: 14px;
+    }
+
+    /* Follow-up table */
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 850px;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #475569;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: left;
+      padding: 14px 15px;
+      border-bottom: 1px solid #e5e7eb;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 15px;
+      border-bottom: 1px solid #eef2f7;
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .level {
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .p0 {
+      color: #dc2626;
+    }
+
+    .p1 {
+      color: #ea580c;
+    }
+
+    .p2 {
+      color: #ca8a04;
+    }
+
+    .time {
+      font-weight: 700;
+      color: #111827;
+    }
+
+    /* Highlight cards */
+    .time-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .time-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 18px;
+      background: #fff;
+    }
+
+    .time-card .card-title {
+      font-size: 14px;
+      color: #64748b;
+      margin-bottom: 8px;
+    }
+
+    .time-card .number {
+      font-size: 25px;
+      font-weight: 750;
+      color: #111827;
+      line-height: 1.2;
+    }
+
+    .time-card .desc {
+      margin-top: 5px;
+      color: #64748b;
+      font-size: 13px;
+    }
+
+    /* Definitions */
+    .definition-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .definition {
+      padding: 17px;
+      border-radius: 12px;
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+    }
+
+    .definition strong {
+      display: block;
+      margin-bottom: 6px;
+      color: #334155;
+    }
+
+    .definition span {
+      font-size: 13px;
+      color: #64748b;
+    }
+
+    /* Process */
+    .process {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0;
+      margin-top: 10px;
+    }
+
+    .process-item {
+      position: relative;
+      padding: 18px 14px;
+      text-align: center;
+    }
+
+    .process-item:not(:last-child)::after {
+      content: "→";
+      position: absolute;
+      right: -7px;
+      top: 31px;
+      color: #94a3b8;
+      font-size: 20px;
+    }
+
+    .process-number {
+      width: 34px;
+      height: 34px;
+      margin: 0 auto 9px;
+      border-radius: 50%;
+      background: #eff6ff;
+      color: #2563eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+    }
+
+    .process-item strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .process-item span {
+      color: #64748b;
+      font-size: 12px;
+    }
+
+    /* Level cards */
+    .level-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    .level-header {
+      padding: 17px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fafc;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .level-name {
+      font-size: 17px;
+      font-weight: 750;
+    }
+
+    .level-label {
+      font-size: 12px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      color: #64748b;
+    }
+
+    .level-body {
+      padding: 20px;
+    }
+
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .action {
+      padding: 14px 16px;
+      border-radius: 10px;
+      background: #f8fafc;
+    }
+
+    .action .action-title {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 3px;
+    }
+
+    .action .action-content {
+      font-size: 14px;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    /* Upgrade */
+    .upgrade-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .upgrade-box {
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .upgrade-box h3 {
+      margin: 0 0 14px;
+      font-size: 16px;
+    }
+
+    .upgrade-item {
+      padding: 10px 0;
+      border-bottom: 1px solid #eef2f7;
+      font-size: 14px;
+    }
+
+    .upgrade-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .upgrade-item strong {
+      color: #111827;
+    }
+
+    /* Important notice */
+    .notice {
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin-top: 18px;
+      color: #9a3412;
+      font-size: 14px;
+    }
+
+    .notice strong {
+      color: #7c2d12;
+    }
+
+    /* Close */
+    .close-box {
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      border-radius: 14px;
+      padding: 22px;
+    }
+
+    .close-box h3 {
+      margin: 0 0 8px;
+      color: #047857;
+      font-size: 17px;
+    }
+
+    .close-box p {
+      margin: 0;
+      color: #065f46;
+      font-size: 14px;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      color: #94a3b8;
+      font-size: 12px;
+      padding-top: 8px;
+    }
+
+    @media (max-width: 800px) {
+      .container {
+        width: min(100% - 20px, 1180px);
+        margin-top: 20px;
+      }
+
+      .header {
+        padding: 28px 24px;
+      }
+
+      .header h1 {
+        font-size: 24px;
+      }
+
+      .section {
+        padding: 22px 18px;
+      }
+
+      .time-cards,
+      .definition-grid,
+      .upgrade-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .action-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .process {
+        grid-template-columns: 1fr;
+      }
+
+      .process-item {
+        text-align: left;
+        padding-left: 48px;
+      }
+
+      .process-number {
+        position: absolute;
+        left: 0;
+        top: 12px;
+        margin: 0;
+      }
+
+      .process-item:not(:last-child)::after {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="tag">IT SUPPORT WORKFLOW · V8</div>
+
+    <h1>境外产研 IT 支持工单定级与跟进机制</h1>
+
+    <p>
+      明确问题等级、首次响应时间、跟进频率、结果时限及升级节点，
+      确保问题有人跟、按时跟、持续跟，直至业务方确认闭环。
+    </p>
+  </header>
+
+
+  <!-- 一、核心机制 -->
+  <section class="section">
+
+    <h2 class="section-title">
+      <span class="icon">⏱️</span>
+      一、跟进时间与核心机制
+    </h2>
+
+    <div class="core-rule">
+      <strong>核心原则：从问题首次反馈开始计时，IT 支持全程督办。</strong>
+
+      <div class="sub">
+        首次响应 ≠ 完成跟进。问题未解决期间，IT 支持需按照对应等级的固定频率主动推进；
+        到达跟进节点仍无反馈或无突破时，立即按照升级机制处理。
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>等级</th>
+            <th>首次响应</th>
+            <th>跟进频率</th>
+            <th>结果 / 方案时限</th>
+            <th>无反馈 / 无突破</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>
+              <span class="level p0">🔴 P0 · 重大</span>
+            </td>
+            <td class="time">立即</td>
+            <td class="time">每 10 分钟</td>
+            <td>
+              2 小时内出止损方案<br>
+              4 小时内恢复核心功能
+            </td>
+            <td>
+              30 分钟未止损 → 立即升级
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <span class="level p1">🟠 P1 · 严重</span>
+            </td>
+            <td class="time">15 分钟内</td>
+            <td class="time">每 4 小时</td>
+            <td>
+              24 小时内给出明确结论 + 解决方案
+            </td>
+            <td>
+              15 分钟无人承接 → 联系研发负责人；
+              12 小时无突破 → 升级研发部门负责人
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <span class="level p2">🟡 P2 · 一般</span>
+            </td>
+            <td class="time">2 小时内</td>
+            <td class="time">每天 1 次</td>
+            <td>
+              5 天内输出结果或方案
+            </td>
+            <td>
+              当天无响应 → 找模块负责人；
+              超期无结果 → 升级研发 +1 负责人
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="time-cards">
+
+      <div class="time-card">
+        <div class="card-title">🔴 P0 跟进节奏</div>
+        <div class="number">10 分钟 / 次</div>
+        <div class="desc">高频跟进，持续同步故障处置进展</div>
+      </div>
+
+      <div class="time-card">
+        <div class="card-title">🟠 P1 跟进节奏</div>
+        <div class="number">4 小时 / 次</div>
+        <div class="desc">定时推进，直至形成明确结论</div>
+      </div>
+
+      <div class="time-card">
+        <div class="card-title">🟡 P2 跟进节奏</div>
+        <div class="number">每天 1 次</div>
+        <div class="desc">按日跟进，避免问题长期无人推进</div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- 二、时间定义 -->
+  <section class="section">
+
+    <h2 class="section-title">
+      <span class="icon">📌</span>
+      二、时间节点怎么理解
+    </h2>
+
+    <div class="definition-grid">
+
+      <div class="definition">
+        <strong>首次响应时间</strong>
+        <span>
+          收到问题后，IT 支持完成受理，并对接对应责任团队的时间。
+        </span>
+      </div>
+
+      <div class="definition">
+        <strong>跟进频率</strong>
+        <span>
+          问题未解决期间，IT 支持主动确认进展并同步业务侧的最低频率。
+        </span>
+      </div>
+
+      <div class="definition">
+        <strong>结果时限</strong>
+        <span>
+          要求在规定时间内给出明确结论、临时方案或最终解决方案。
+        </span>
+      </div>
+
+    </div>
+
+    <div class="notice">
+      <strong>特别说明：</strong>
+      跟进不是被动等待研发回复。到达跟进节点仍无反馈时，
+      IT 支持需要主动 @提醒；仍无响应，则按照升级机制继续推进。
+    </div>
+
+  </section>
+
+
+  <!-- 三、标准跟进流程 -->
+  <section class="section">
+
+    <h2 class="section-title">
+      <span class="icon">🔄</span>
+      三、统一跟进流程
+    </h2>
+
+    <div class="process">
+
+      <div class="process-item">
+        <div class="process-number">1</div>
+        <strong>问题反馈</strong>
+        <span>记录首次反馈时间</span>
+      </div>
+
+      <div class="process-item">
+        <div class="process-number">2</div>
+        <strong>完成定级</strong>
+        <span>确认 P0 / P1 / P2</span>
+      </div>
+
+      <div class="process-item">
+        <div class="process-number">3</div>
+        <strong>首次响应</strong>
+        <span>按等级要求完成承接</span>
+      </div>
+
+      <div class="process-item">
+        <div class="process-number">4</div>
+        <strong>持续跟进</strong>
+        <span>按固定频率主动推进</span>
+      </div>
+
+      <div class="process-item">
+        <div class="process-number">5</div>
+        <strong>确认闭环</strong>
+        <span>业务方确认后正式结案</span>
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- 四、定级标准 -->
+  <section class="section">
+
+    <h2 class="section-title">
+      <span class="icon">📊</span>
+      四、问题定级标准
+    </h2>
+
+    <div class="core-rule">
+      <strong>定级原则：先看影响范围，再看业务阻断程度。</strong>
+      <div class="sub">
+        满足对应等级任一条件，即按对应等级处理；问题严重程度发生变化时，及时调整等级。
+      </div>
+    </div>
+
+    <div class="level-card">
+
+      <div class="level-header">
+        <div class="level-name p0">🔴 P0 · 重大</div>
+        <div class="level-label">最高优先级</div>
+      </div>
+
+      <div class="level-body">
+        <div class="action-grid">
+
+          <div class="action">
+            <div class="action-title">核心业务</div>
+            <div class="action-content">
+              上课 / 支付 / 官网 / 信息 / 教务等核心链路完全中断
+            </div>
+          </div>
+
+          <div class="action">
+            <div class="action-title">业务风险</div>
+            <div class="action-content">
+              重大客诉 / 舆情风险
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+
+    <div class="level-card">
+
+      <div class="level-header">
+        <div class="level-name p1">🟠 P1 · 严重</div>
+        <div class="level-label">重点跟进</div>
+      </div>
+
+      <div class="level-body">
+        <div class="action-grid">
+
+          <div class="action">
+            <div class="action-title">业务异常</div>
+            <div class="action-content">
+              核心业务链路异常但未完全阻断，且业务方无应急方案
+            </div>
+          </div>
+
+          <div class="action">
+            <div class="action-title">课程影响</div>
+            <div class="action-content">
+              影响 ≥ 1 节课
+            </div>
+          </div>
+
+          <div class="action">
+            <div class="action-title">用户影响</div>
+            <div class="action-content">
+              普通客诉
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+
+    <div class="level-card">
+
+      <div class="level-header">
+        <div class="level-name p2">🟡 P2 · 一般</div>
+        <div class="level-label">日常跟进</div>
+      </div>
+
+      <div class="level-body">
+        <div class="action-grid">
+
+          <div class="action">
+            <div class="action-title">功能异常</div>
+            <div class="action-content">
+              功能异常但不影响主流程，仅影响使用体验
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+
+  <!-- 五、分级跟进动作 -->
+  <section class="section">
+
+    <h2 class="section-title">
+      <span class="icon">🎯</span>
+      五、分级跟进动作
+    </h2>
+
+
+    <!-- P0 -->
+    <div class="level-card">
+
+      <div class="level-header">
+        <div class="level-name p0">🔴 P0 · 盯死节奏</div>
+        <div class="level-label">高频跟进</div>
+      </div>
+
+      <div class="level-body">
+
+        <div class="action-grid">
+
+          <div class="action">
+            <div class="action-title">立即响应</div>
+            <div class="action-content">
+              立即建群，拉研发负责人参与排查
+            </div>
+          </div>
+
+          <div class="action">
+            <div class="action-title">10 分钟节点</div>
+            <div class="action-content">
+              10 分钟内形成初步结论或方案；否则立即启动紧急响应
+            </div>
+          </div>
+
+          <div class="action">
+            <div class="action-title">持续跟进</div>
+            <div class="action-content">
+              每 10 分钟同步一次进展
+            </div>
+          </div>
+
+          <div class="action">
+            <div class="action-title">业务同步</div>
+            <div class="action-content">
+              30 分钟内输出业务侧首版通报
+            </div>
+          </div>
+
+          <div class="action">
+            <div class="action-title">止损时限</div>
+            <div class="action-content">
+              2 小时内必须给出止损方案
+            </div>
+          </div>
+
+          <div class="action">
+            <div class="action-title">恢复时限</div>
+            <div class="action-content">
+              4 小时内恢复核心功能
+            </div>
+          </div>
+
+          <div class="action">
+            <div class="action-title">升级节点</div>
+            <div class="action-content">
+              30 分钟未止损 → 立即升级至负责人协调推动
+            </div>
+          </div>
+
+          <div class="action">
+            <div class="action-title">复盘</div>
+            <div class="action-content">
+              故障恢复后 48 小时内完成复盘
+            </div>
+          </div>
+
+        </div>
+
+        <div class="notice">
+          <strong>P0 响应相关方：</strong>
+          反馈人 / 校长、IT 支持及负责人、研发及负责人、测试及负责人、
+          中台 / 运维 / SRE / DBA / 产品等，按实际情况加入。
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- P1 -->
+    <div class="level-card">
+
+      <div class="level-header">
+        <div class="level-name p1">🟠 P1 · 定时推进</div>
+        <div class="level-label">重点跟进</div>
+      </div>
+
+      <div class="level-body">
+
+        <div class="action-grid">
+
+          <div class="action">
+            <div class="action-title">首次响应</div>
+            <div class="action-content">
+              立即建群并 @研发及 +1 leader，15 分钟内响应
+            </div>
+          </div>
+
+          <div class="action">
+            <div class="action-title">跟进频率</div>
+            <div class="action-content">
+              每 4 小时同步一次进展
+            </div>
+          </div>
+
+          <div class="action">
+            <div class="action-title">结果时限</div>
+            <div class="action-content">
+              24 小时内必须给出明确结论 + 解决方案
+            </div>
+          </div>
+
+          <div class="action">
+            <div class="action-title">无人响应</div>
+            <div class="action-content">
+              建群 15 分钟无响应 → 电话联系研发负责人
+            </div>
+          </div>
+
+          <div class="action">
+            <div class="action-title">跟进节点无响应</div>
+            <div class="action-content">
+              先群内 @提醒；15 分钟仍无响应 → 电话提醒
+            </div>
+          </div>
+
+          <div class="action">
+            <div class="action-title">持续无突破</div>
+            <div class="action-content">
+              12 小时无突破 → 升级研发部门负责人
+            </div>
+          </div>
+
+          <div class="action">
+            <div class="action-title">复盘</div>
+            <div class="action-content">
+              问题解决后 1 周内完成复盘
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- P2 -->
+    <div class="level-card">
+
+      <div class="level-header">
+        <div class="level-name p2">🟡 P2 · 按日跟进</div>
+        <div class="level-label">日常跟进</div>
+      </div>
+
+      <div class="level-body">
+
+        <div class="action-grid">
+
+          <div class="action">
+            <div class="action-title">首次响应</div>
+            <div class="action-content">
+              2 小时内完成受理并对接对应研发
+            </div>
+          </div>
+
+          <div class="action">
+            <div class="action-title">跟进频率</div>
+            <div class="action-content">
+              每天同步 1 次进展
+            </div>
+          </div>
+
+          <div class="action">
+            <div class="action-title">结果时限</div>
+            <div class="action-content">
+              5 天内输出结果或方案
+            </div>
+          </div>
+
+          <div class="action">
+            <div class="action-title">跟进方式</div>
+            <div class="action-content">
+              无需建立专项群，工单一对一跟进即可
+            </div>
+          </div>
+
+          <div class="action">
+            <div class="action-title">当天无响应</div>
+            <div class="action-content">
+              找模块负责人推进
+            </div>
+          </div>
+
+          <div class="action">
+            <div class="action-title">超期无结果</div>
+            <div class="action-content">
+              升级研发 +1 负责人
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </section>
+
+
+  <!-- 六、升级机制 -->
+  <section class="section">
+
+    <h2 class="section-title">
+      <span class="icon">📈</span>
+      六、升级机制
+    </h2>
+
+    <div class="upgrade-grid">
+
+      <div class="upgrade-box">
+
+        <h3>① 等级升级｜问题变严重</h3>
+
+        <div class="upgrade-item">
+          <strong>P2 → P1</strong><br>
+          超 5 天无解决方案 / 出现客诉 / 校长介入 /
+          业务累计催促 3 次
+        </div>
+
+        <div class="upgrade-item">
+          <strong>P1 → P0</strong><br>
+          超 24 小时无方案且无临时兜底 /
+          出现重大客诉或舆情 / 故障持续扩大
+        </div>
+
+      </div>
+
+
+      <div class="upgrade-box">
+
+        <h3>② 找人升级｜推进不动</h3>
+
+        <div class="upgrade-item">
+          <strong>P0：</strong>
+          30 分钟未止损 → 升级至负责人协调推动
+        </div>
+
+        <div class="upgrade-item">
+          <strong>P1：</strong>
+          15 分钟无人承接 → 升级研发 +2 负责人；
+          12 小时无突破 → 升级研发部门负责人
+        </div>
+
+        <div class="upgrade-item">
+          <strong>P2：</strong>
+          当天无响应 → 找模块负责人；
+          超期无结果 → 升级研发 +1 负责人
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="notice">
+      <strong>跨团队协调原则：</strong>
+      协调推进出现阻塞时，直接拉双方负责人对接，不被动等待。
+    </div>
+
+  </section>
+
+
+  <!-- 七、统一闭环 -->
+  <section class="section">
+
+    <h2 class="section-title">
+      <span class="icon">✅</span>
+      七、统一闭环规则
+    </h2>
+
+    <div class="close-box">
+
+      <h3>问题解决 ≠ 工单结案</h3>
+
+      <p>
+        技术修复完成后，必须经反馈人 / 业务方确认实际问题已解决，
+        才算正式结案。禁止技术侧单方面宣布“已解决”后直接关闭工单。
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <!-- Footer -->
+  <div class="footer">
+    境外产研 IT 支持团队 · IT Support Workflow · 试运行
+  </div>
+
+</div>
+
+</body>
+</html>
